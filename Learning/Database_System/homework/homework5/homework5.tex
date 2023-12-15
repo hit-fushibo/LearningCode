@@ -35,7 +35,9 @@
 \end{problem}
 
 \begin{solution}
-    
+    A.\quad 共产生$2400+\frac{1200\times 2400}{75-2}=40653$次IO操作
+
+    B.\quad 共产生$1200+\frac{2400\times 1200}{75-2}=39453$次IO操作
 \end{solution}
 
 % 2
@@ -48,7 +50,9 @@
 \end{problem}
 
 \begin{solution}
-    
+    (1)\quad IO查询代价为$B(R)+T(R)\lceil\frac{B(S)}{V(S,Y)}\rceil=50+1000\times\lceil\frac{30}{20}\rceil=2050$
+
+    (2)\quad IO查询代价为$B(R)+\frac{T(R)T(S)}{V(S,Y)}=50+\frac{1000\times 1500}{20}=75050$
 \end{solution}
 
 % 3
@@ -64,7 +68,12 @@
 \end{problem}
 
 \begin{solution}
-    
+    (1)\quad 采用基于块的循环嵌套连接，由于B(R)<B(S)，所以选择R作为外关系。那么IO次数$=B(R)+\frac{B(R)B(S)}{M-1}=2000+\frac{2000\times 2000}{41-1}=102000$
+
+    (2)\quad 由于关系R在属性B上并不是有序的，所以需要先对它划分归并段。由于关系S在属性B上时有序的所以在归并时可认为其只有一个归并段。因此，对于关系R，创建的归并段至多有40个。经过一次排序后，对于关系R可以创建$\lceil\frac{B(R)}{M}\rceil=\lceil\frac{2000}{41}\rceil=49$个归并段。
+所以，还需要进行一次排序，经过两次排序后，关系R得到了两个归并段。这时已经产生了$4B(R)$次IO操作。在归并阶段时，又会产生$B(R)+B(S)$次IO操作，所以一共有$5B(R)+B(S)=5\times 2000+2000=12000$次IO操作。
+
+    (3)\quad 
 \end{solution}
 
 % 4
@@ -100,7 +109,40 @@
 \end{problem}
 
 \begin{solution}
-    
+    (1)\quad $\Pi_{S.SNAME}(\sigma_{SC.S\#=S.S\#\quad and\quad SC.C\#=C.C\#\quad and\quad C.CNAME='\text{数据库}'}(S\times (C\times SC)))$
+
+    (2)
+
+    \begin{figure}[H]
+        \centering
+        \begin{minipage}[c]{0.45\textwidth}
+            \centering
+            \includegraphics[width=0.95\textwidth]{figures/1.jpg}
+            \subcaption{查询计划树}
+        \end{minipage}
+        \begin{minipage}[c]{0.45\textwidth}
+            \centering
+            \includegraphics[width=0.95\textwidth]{figures/2.jpg}
+            \subcaption{优化后的查询计划树}
+        \end{minipage}
+    \end{figure}
+
+    (3)
+    如下图，图中标注该操作产生的元组个数。
+
+    \begin{figure}[H]
+        \centering
+        \begin{minipage}[c]{0.45\textwidth}
+            \centering
+            \includegraphics[width=0.95\textwidth]{figures/3.jpg}
+            \subcaption{优化前}
+        \end{minipage}
+        \begin{minipage}[c]{0.45\textwidth}
+            \centering
+            \includegraphics[width=0.95\textwidth]{figures/4.jpg}
+            \subcaption{优化后}
+        \end{minipage}
+    \end{figure}
 \end{solution}
 
 % 5
@@ -131,7 +173,20 @@
 \end{problem}
 
 \begin{solution}
-    
+    (1)
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/5.jpg}
+    \end{figure}
+
+    (2)
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/6.jpg}
+    \end{figure}
+
 \end{solution}
 
 % 6
@@ -160,7 +215,21 @@
 \end{problem}
 
 \begin{solution}
-    
+    (1)
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/7.jpg}
+    \end{figure}
+
+    (2)
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/8.jpg}
+    \end{figure}
+
+    将投影和选择尽可能的早执行，同时利用投影操作筛选后续操作中不必要的属性，减少执行过程中的元组个数。
 \end{solution}
 
 
