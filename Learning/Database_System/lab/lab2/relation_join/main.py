@@ -34,15 +34,12 @@ def relation_select(buf: extmem.Buf):
         for data in buf.data[index]:
             R_A = int(data.split(' ')[0])
             R_B = int(data.split(' ')[1])
-
             if R_A == 40:
-                # print(R_A,R_B,i,file)
                 tmp_R.append(str(R_A)+' '+str(R_B))
             if len(tmp_R) == 7:
 
                 w_index = buf.getNewBlockBuffer()
                 if w_index != -1:
-                    print(1)
                     buf.data[w_index] = tmp_R
                     file_path = select_dir+'r'+str(num)+'.blk'
                     buf.writeBlockToDisk(w_index, file_path)
@@ -145,9 +142,11 @@ def Nested_Loop_Join(buf: extmem.Buf):
 
     if os.path.exists(nlj_dir):
         for file in os.listdir(nlj_dir):
-            os.remove(nlj_dir)
+            os.remove(nlj_dir+file)
     else:
         os.makedirs(nlj_dir)
+        
+    
     num = 0
     res = []
     for i in range(16):
@@ -469,11 +468,9 @@ def Sort_Merge_Join(buf: extmem.Buf):
         R找S
         '''
         if int(buf.data[R_index][0].split(' ')[0]) == int(buf.data[S_index][0].split(' ')[0]):
-            # print(2)
             buf.data[res_index].append(
                 buf.data[R_index][0]+' '+buf.data[S_index][0].split(' ')[1])
             if len(buf.data[res_index]) == tumple_num:
-                # print(1)
                 res_file = sort_dir+'j'+str(res_num)+'.blk'
                 buf.writeBlockToDisk(res_index, res_file)
                 res_num += 1
