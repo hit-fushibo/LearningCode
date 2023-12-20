@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2023/10/07 18:41:26
+// Create Date: 2023/08/27 18:58:51
 // Design Name: 
-// Module Name: ALU
+// Module Name: alu
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -19,76 +19,50 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+// define all calculator
+`define ADD  6'b100000
+`define SUB  6'b100010
+`define AND  6'b100100
+`define OR   6'b100101
+`define XOR  6'b100110
+`define SLT  6'b101010
+`define MOVZ 6'b001010
+`define SLL  6'b000000
+`define A    6'b000001
+`define B    6'b000010
 
-module ALU(
-input [10:0]OP_code,
-input [31:0]rs,
-input [31:0]rt,
-output reg [31:0]ALU_output,
-output reg Cond,
-output reg Zero,
-output reg Cout
-    );
-    reg [5:0] OPcode;
-    reg [4:0] sa;
-    always @(*) begin
-        OPcode=OP_code[5:0];
-        sa=OP_code[10:6];
-        Cond=0;
-        Cout=0;
-        Zero=0;
-        case (OPcode)
-            6'b100000:
-            begin
-                {Cout,ALU_output}=rs+rt;
+module alu (
+    input  [31:0]   A   ,
+    input  [31:0]   B   ,
+    input  [5:0]  Card,
+    output [31:0] result
+);
 
-            end
-            6'b100010:
-            begin
-                {Cout,ALU_output}=rs-rt;
-            end 
-            6'b100100:
-            begin
-                ALU_output=rs&rt;
+    wire [31:0] add_result ;
+    wire [31:0] sub_result ;
+    wire [31:0] and_result ;
+    wire [31:0] or_result  ;
+    wire [31:0] xor_result ;
+    wire [31:0] slt_result ;
+    wire [31:0] movz_result;
+    wire [31:0] sll_result ;
 
-            end 
-            6'b100101:
-            begin
-                ALU_output=rs|rt;
+    assign add_result  = A + B;
+    assign sub_result  = A - B;
+    assign and_result  = A & B;
+    assign or_result   = A | B;
+    assign xor_result  = A ^ B;
+    assign slt_result  = (A < B) ? 32'b1 : 32'b0;
+    assign movz_result = (B == 32'b0) ? A : 32'b0;
+    assign sll_result  = B << A;
+    
+    assign  result   =   ({32{Card == `ADD }}  & add_result)   |
+                         ({32{Card == `SUB }}  & sub_result)   |
+                         ({32{Card == `AND }}  & and_result)   |
+                         ({32{Card == `OR  }}  & or_result)    |
+                         ({32{Card == `XOR }}  & xor_result)   |
+                         ({32{Card == `SLT }}  & slt_result)   |
+                         ({32{Card == `MOVZ}}  & movz_result)  |
+                         ({32{Card == `SLL }}  & sll_result);
 
-            end 
-            6'b100110:
-            begin
-                ALU_output=rs^rt;
-            end 
-            6'b101010:
-            begin
-                if(rs<rt)begin
-                    ALU_output=1;
-                end
-                else begin
-                    ALU_output=0;
-                end 
-            end 
-            6'b001010:
-            begin
-                if(rt==0)begin
-                    ALU_output=rs;
-                end
-                else begin
-                    Cond=1;
-                end 
-            end 
-            6'b000000:
-            begin
-                ALU_output=rt<<sa;
-            end  
-        endcase
-        if(ALU_output==0)begin
-            Zero=1;
-        end
-        else begin
-            Zero=0;
-        end
-    end
 endmodule

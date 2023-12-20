@@ -3,7 +3,7 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2023/10/07 10:58:34
+// Create Date: 2023/10/01 21:13:35
 // Design Name: 
 // Module Name: cpu
 // Project Name: 
@@ -19,348 +19,289 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
 module cpu(
-    input  clk,
+    input clk,
     input resetn,
 
     output [31:0] debug_wb_pc,
-    output  debug_wb_rf_wen,
+    output debug_wb_rf_wen,
     output [4:0] debug_wb_rf_addr,
-    output [31:0] debug_wb_rf_wdata  
+    output [31:0] debug_wb_rf_wdata
     );
-//---------------
-    //PC_in
-    wire [31:0] npc;
-    wire stall;
 
-    //PC_out
-    wire [31:0] c_pc;
+    wire wb_wen,D_wen,  
+         mux_A_select,mux_B_select,mux_pc_select,WB_mux_select,mux_sll_select,
+         adder_jump_select,
+         pc_write,if_id_write_enable,id_ex_reset;
 
-//---------------
-    //PCadder4_in
-    //c_pc
+    wire [1:0] mux_A_select_dir,mux_B_select_dir;
 
-    //PCadder4_out
-    //npc
+    wire [4:0] WB_addr;
 
-//---------------
-    //IMEM_in
-    //c_pc
+    wire [5:0] alu_op;
 
-    //IMEM_out
-    wire [31:0] inst;
+    wire [31:0] 
+         pc_i, 
+         pc_o, 
+         pc_adder_o, 
+         imem_output, 
+         npc, 
+         reg_files_outputA, 
+         reg_files_outputB, 
+         ext_out, 
+         reg_A_output, 
+         reg_B_output, 
+         reg_imm_output, 
+         write_back_data, 
+         alu_A_input, 
+         alu_B_input, 
+         alu_output, 
+         alureg_output, 
+         dmem_data_output, 
+         lmd_output, 
+         alu_A_sll_input, 
+         npc_adder_output, 
+         jump_select_output,
+         mem_alu_reg_output,
+         
+         mux_A_output_dir,
+         mux_B_output_dir,
+         
+         if_id_ir,
+         id_ex_ir,
+         ex_mem_ir,
+         mem_wb_ir,
+         
+         id_ex_npc,
+         if_pc,
+         id_pc,
+         ex_pc,
+         mem_pc,
+         
+         mem_cond,
+         wb_cond;
 
-//---------------
-    //IF_ID_in
-    //c_pc
-    //stall
-    //inst
-    //npc
+    reg write_enable;
 
-    //IF_ID_out
-    wire [31:0] ID_IR;
-    wire [31:0] ID_NPC;
-    wire [31:0] ID_PC;
-
-//---------------
-    //regs_in
-    //ID_IR[25:21]
-    //ID_IR[20:16]
-    wire [31:0] wb_data;
-    wire [31:0] wb_addr;
-    wire wb_wen;
-
-    //regs_out
-    wire [31:0] A;
-    wire [31:0] B;
-
-//---------------
-    //Extender_in
-    //ID_IR[15:0]
-
-    //Extender_out
-    wire [31:0] extendeImm;
-
-//---------------
-    //ID_EX_in
-    //ID_PC
-    //ID_NPC
-    //A
-    //B
-    //ID_IR
-    //extendeImm
-
-    //ID_EX_out
-    wire [31:0] EX_PC;
-    wire [31:0] EX_NPC;
-    wire [31:0] EX_A;
-    wire [31:0] EX_B;
-    wire [31:0] EX_Imm;
-    wire [31:0] EX_IR;
-    wire [10:0] ALUOP_code;
-
-//---------------
-    //MUX_A_in
-    wire [2:0] select_a;
-    //EX_A
-    //EX_IR[25:21]
-    wire [31:0] LMD;
-    wire [31:0] EX_MEM_aluout;
-    wire [31:0] MEM_WB_aluout;
-
-    //MUX_A_out
-    wire [31:0] A_output;
-
-//---------------
-    //MUX_B_in
-    wire [2:0] select_b;
-    //EX_B
-    //EX_Imm
-    //LMD
-    //EX_MEM_aluout
-    //MEM_WB_aluout
-
-    //MUX_B_out
-    wire [31:0]B_output;
-
-//---------------
-    //ALU_in
-    //EX_IR[10:0]
-    //A_output
-    //B_output
-
-    //ALU_out
-    wire [31:0]aluoutput;
-    wire Cond;
-    wire Zero;
-    wire Cout;
-
-//---------------
-    //EX_MEM_in
-    //EX_PC
-    //EX_IR
-    //aluoutput
-    //B_output
-    //Cond
-
-    //EX_MEM_out
-    wire [31:0] MEM_PC;
-    wire [31:0] MEM_ALUoutput;
-    wire [31:0] MEM_B;
-    wire [31:0] MEM_IR;
-    wire [31:0] MEM_Cond;
-    wire DMEM_wen;
-
-//---------------
-    //DMEM_in
-    //MEM_ALUoutput
-    //DMEM_wen
-    //MEM_ALUoutput
-    //MEM_B
-
-    //DMEM_out
-    wire [31:0] D_LMD;
-
-//---------------
-    //MEM_WB_in
-    //MEM_PC
-    //D_LMD
-    //MEM_ALUoutput
-    //MEM_IR
-    //MEM_Cond
-
-    //MEM_WB_out
-    wire [31:0] WB_PC;
-    //LMD
-    wire [31:0] WB_ALUoutput;
-    wire [31:0] WB_IR;
-    //wbaddr
-    //wb_wen
-
-//---------------
-    //WB_MUX_in
-    //WB_IR[31:26]
-    //WBALUoutput;
-    //LMD
-
-    //WB_MUX_out
-    //wb_data
-
-//---------------
-    //Select_in
-    //EX_IR
-    //MEM_IR
-    //ID_IR
-
-    //Select_out
-    //select_a
-    //select_b
-    //stall
-
-assign debug_wb_pc=MEM_PC;
-assign debug_wb_rf_wen=wb_wen;
-assign debug_wb_rf_addr=wb_addr;
-assign debug_wb_rf_wdata=wb_data;
- 
+    assign debug_wb_rf_wen = wb_wen;
+    assign debug_wb_pc = mem_pc;
+    assign debug_wb_rf_addr = WB_addr;
+    assign debug_wb_rf_wdata = write_back_data;
 
 
+    initial begin
+        write_enable <= 1'b1;
+    end
 
+    pc u_pc(
+        .clk (clk),
+        .rst (resetn),
+        .write_enable(pc_write),
+        .pc_input (pc_i),
+        .pc_output (pc_o)
+    );   
 
+    adder u_adder (
+        .A (pc_o),
+        .B (32'h4),
+        .F (pc_adder_o)
+    );//pc+4
 
-    PC PC_u(
+    mux u_mux_pc (
+        .A (npc),
+        .B (jump_select_output),
+        .select (mux_pc_select),
+        .out (pc_i)
+    );
+
+    IMEM u_IMEM (
+        .clk (clk),
+        .raddr (pc_o),
+        .rdata (imem_output)
+    );
+
+    IF_ID u_IF_ID (
         .clk(clk),
         .resetn(resetn),
-        .npc(npc),
-        .stall(stall),
-        .c_pc(c_pc)
+        .wen (if_id_write_enable),
+        .ir_input (imem_output),
+        .pc_input(pc_o),
+        .if_adder_output (pc_adder_o),
+        .ir_output (if_id_ir),
+        .npc (npc),
+        .pc_output (if_pc)
     );
 
-    PCadd4 PCadd4_u(
-        .c_pc(c_pc),
-        .npc(npc)
+    regs u_regs (
+        .clk (clk),
+        .raddr1 (if_id_ir[25:21]),
+        .raddr2 (if_id_ir[20:16]),
+        .we (wb_wen),
+        .waddr (WB_addr),
+        .wdata (write_back_data),
+        .rdata1 (reg_files_outputA),
+        .rdata2 (reg_files_outputB)
     );
 
-    IMEM IMEM_u(
-        .addr(c_pc),
-        .output_ins(inst)
+    extender u_extender (
+        .instr_index (if_id_ir[15:0]),
+        .out (ext_out) 
     );
 
-    IF_ID IF_ID_u(
+    stall_detection_unit u_stall_detection_unit (
+        .if_id_ir (if_id_ir),
+        .id_ex_ir (id_ex_ir),
+        .pc_write (pc_write),
+        .if_id_write_enable (if_id_write_enable),
+        .id_ex_reset (id_ex_reset)
+    );
+
+    ID_EX u_ID_EX(
+        .clk(clk),
+        .resetn(id_ex_reset),
+        .write_enable(write_enable),
+        .ir_input (if_id_ir),
+        .reg_A_input(reg_files_outputA),
+        .reg_B_input (reg_files_outputB),
+        .imm_input (ext_out),
+        .npc_input (npc),
+        .pc_input (if_pc),
+        .ir_output (id_ex_ir),
+        .npc_output (id_ex_npc),
+        .reg_A_output (reg_A_output),
+        .reg_B_output (reg_B_output),
+        .imm_output (reg_imm_output),
+        .pc_output (id_pc),
+
+        .mux_A_select(mux_A_select),
+        .mux_B_select (mux_B_select),
+        .mux_sll_select (mux_sll_select),
+        .alu_op (alu_op)
+    );
+
+    mux u_alu_mux1 (
+        .A (reg_A_output),
+        .B (npc),
+        .select (mux_A_select),
+        .out (alu_A_input)
+    ); 
+
+    mux u_sll_mux (
+        .A ({{27'd0}, id_ex_ir[10:6]}),
+        .B (alu_A_input),
+        .select (mux_sll_select),
+        .out (alu_A_sll_input)
+    ); 
+
+    mux u_alu_mux2 (
+        .A (reg_B_output),
+        .B (reg_imm_output),
+        .select (mux_B_select),
+        .out (alu_B_input)
+    );
+
+    dir_unit u_dir_unit (
+        .id_ex_ir (id_ex_ir),
+        .ex_mem_ir (ex_mem_ir),
+        .mem_wb_ir (mem_wb_ir),
+        .mem_cond (mux_B_output_dir),
+        .wb_cond (wb_cond),   
+        .forward_A (mux_A_select_dir),
+        .forward_B (mux_B_select_dir)
+    );
+
+    mux_4 u_mux_A (
+        .A (alu_A_sll_input),
+        .B (alureg_output),
+        .C (write_back_data),
+        .D (),
+        .select (mux_A_select_dir),
+        .result (mux_A_output_dir)
+    );
+
+    mux_4 u_mux_B (
+        .A (alu_B_input),
+        .B (alureg_output),
+        .C (write_back_data),
+        .D (),
+        .select (mux_B_select_dir),
+        .result (mux_B_output_dir)
+    );
+
+    alu u_alu (
+        .A (mux_A_output_dir),
+        .B (mux_B_output_dir),
+        .Card (alu_op),
+        .result(alu_output)
+    );
+
+    EX_MEM u_EX_MEM (
         .clk(clk),
         .resetn(resetn),
-        .PC(c_pc),
-        .stall(stall),
-        .IR(inst),
-        .NPC(npc),
-        .O_IR(ID_IR),
-        .O_NPC(ID_NPC),
-        .o_PC(ID_PC)
+        .write_enable(write_enable),
+        .alureg_input (alu_output),
+        .ir_input (id_ex_ir),
+        .pc_input (id_pc),
+        .mem_cond(mux_B_output_dir),
+
+        .alureg_output (alureg_output),
+        .ir_output (ex_mem_ir),
+        .pc_output (ex_pc),
+        .wb_cond (wb_cond),
+
+        .dmem_write_enable(D_wen),
+        .mux_pc_select (mux_pc_select),
+        .adder_jump_select (adder_jump_select)
     );
 
-    regs regs_u(
+    npc_adder u_npc_adder (
+        .A (npc),
+        .B (alureg_output),
+        .F (npc_adder_output)
+    );
+
+    mux u_jump_select (
+        .A ({npc[31:28], ex_mem_ir[25:0], {2'b0}}),
+        .B (npc_adder_output),
+        .select (adder_jump_select),
+        .out (jump_select_output)
+    );
+
+    DMEM u_DMEM (
+        .clk(clk),
+        .raddr (alureg_output),
+        .waddr (alureg_output),
+        .write_enable (D_wen),
+        .wdata (reg_B_output),
+        .rdata (dmem_data_output)
+    );
+
+    MEM_WB u_MEM_WB(
         .clk(clk),
         .resetn(resetn),
-        .raddr1(ID_IR[25:21]),
-        .raddr2(ID_IR[20:16]),
-        .wdata(wb_data),
-        .waddr(wb_addr),
-        .wen(wb_wen),
-        .rdata1(A),
-        .rdata2(B)
+        .write_enable(write_enable),
+        .ir_input (ex_mem_ir),
+        .lmd_input (dmem_data_output),
+        .mem_cond (mem_cond),
+        .wb_cond (wb_cond),
+        .alureg_input (alureg_output),
+        .pc_input (ex_pc),
+
+        .ir_output (mem_wb_ir),
+        .lmd_output (lmd_output),
+        .alureg_output (mem_alu_reg_output),
+        .pc_output(mem_pc),
+
+        .reg_write_enable (wb_wen),
+        .write_back_mux_select(WB_mux_select),
+        .write_back_addr (WB_addr)
     );
 
-    Extender Extender_u(
-        .value(ID_IR[15:0]),
-        .out_value(extendeImm)
+    mux u_wb_mux (
+        .A (lmd_output),
+        .B (mem_alu_reg_output),
+        .select (WB_mux_select),
+        .out (write_back_data)
     );
-
-    ID_EX ID_EX_u(
-        .clk(clk),
-        .resetn(resetn),
-        .PC(ID_PC),
-        .NPC(ID_NPC),
-        .A(A),
-        .B(B),
-        .IR(ID_IR),
-        .Imm(extendeImm),
-        .o_PC(EX_PC),
-        .o_npc(EX_NPC),
-        .o_A(EX_A),
-        .o_B(EX_B),
-        .o_Imm(EX_Imm),
-        .o_IR(EX_IR),
-        .o_ALUOPcode(ALUOP_code)
-    );
-
-    MUX_A MUX_A_u(
-        .select(select_a),
-        .A(EX_A),
-        .base(EX_IR[25:21]),
-        .LMD(LMD),
-        .MEM_ALU(EX_MEM_aluout),
-        .WB_ALU(MEM_WB_aluout),
-        .A_output(A_output)
-    );
-
-    MUX_B MUX_B_u(
-        .select(select_b),
-        .B(EX_B),
-        .Imm(EX_Imm),
-        .LMD(LMD),
-        .MEM_ALU(EX_MEM_aluout),
-        .WB_ALU(MEM_WB_aluout),
-        .B_output(B_output)
-    );
-
-    ALU ALU_u(
-        .OP_code(ALUOP_code),
-        .rs(A_output),
-        .rt(B_output),
-        .ALU_output(aluoutput),
-        .Cond(Cond),
-        .Zero(Zero),
-        .Cout(Cout)
-    );
-
-    EX_MEM EX_MEM_u(
-        .clk(clk),
-        .resetn(resetn),
-        .PC(EX_PC),
-        .IR(EX_IR),
-        .ALUoutput(aluoutput),
-        .B(B_output),
-        .cond(Cond),
-        .o_PC(MEM_PC),
-        .o_ALUoutput(MEM_ALUoutput),
-        .o_B(MEM_B),
-        .o_IR(MEM_IR),
-        .o_cond(MEM_Cond),
-        .DMEM_wen(DMEM_wen)
-    );
-
-    DMEM DMEM_u(
-        .readaddr(MEM_ALUoutput),
-        .wen(DMEM_wen),
-        .waddr(MEM_ALUoutput),
-        .wdata(MEM_B),
-        .rdata(D_LMD)
-    );
-
-    MEM_WB MEM_WB_u(
-        .clk(clk),
-        .resetn(resetn),
-        .PC(MEM_PC),
-        .LMD(D_LMD),
-        .ALUoutput(MEM_ALUoutput),
-        .IR(MEM_IR),
-        .MOVZ_cond(MEM_Cond),
-        .o_PC(WB_PC),
-        .o_LMD(LMD),
-        .o_ALUoutput(WB_ALUoutput),
-        .o_IR(WB_IR),
-        .wb_addr(wbaddr),
-        .reg_wen(wb_wen)
-    );
-
-    WB_MUX WB_MUX_u(
-        .OP_code(WB_IR[31:26]),
-        .aluoutpu(WBALUoutput),
-        .LMD(LMD),
-        .out(wb_data)
-    );
-
-    Select Select_u(
-        .clk(clk),
-        .EX_MEM_IR(EX_IR),
-        .MEM_WB_IR(MEM_IR),
-        .ID_EX_IR(ID_IR),
-        .A_select(select_a),
-        .B_select(select_b),
-        .stall(stall)
-    );
-
-
-
 
 endmodule

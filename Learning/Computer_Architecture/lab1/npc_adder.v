@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2023/10/13 10:16:14
+// Create Date: 2023/09/04 11:13:50
 // Design Name: 
-// Module Name: PCadd4
+// Module Name: npc_adder
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,9 +20,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module PCadd4(
-input [31:0] c_pc,
-output [31:0] npc
-    );
-    assign npc=c_pc+4;
+module npc_adder(
+    input [31:0] A,
+    input [31:0] B,
+    output [31:0] F
+);
+    assign F = A + (B << 2);
 endmodule

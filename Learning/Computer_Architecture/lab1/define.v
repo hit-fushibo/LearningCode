@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2023/10/31 22:46:11
+// Create Date: 2023/10/02 22:17:39
 // Design Name: 
-// Module Name: MUX_DATA_IN
+// Module Name: define
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -19,14 +19,19 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
+`define OPERATION 6'b000000
+`define SW 6'b101011
+`define LW 6'b100011
+`define BNE 6'b000101
+`define J 6'b000010
 
-module MUX_DATA_IN(
-    input [31:0] mux_data_in_data1,
-    input [31:0] mux_data_in_data2,
-    input mux_data_valid_seq,
-    output [31:0] mux_data_out
-    );
-
-    assign mux_data_out = mux_data_valid_seq==0 ? mux_data_in_data1 : mux_data_in_data2;
-
-endmodule
+`define ADD  6'b100000
+`define SUB  6'b100010
+`define AND  6'b100100
+`define OR   6'b100101
+`define XOR  6'b100110
+`define SLT  6'b101010
+`define MOVZ 6'b001010
+`define SLL  6'b000000
+`define A    6'b000001
+`define B    6'b000010

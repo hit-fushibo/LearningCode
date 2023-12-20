@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2023/09/01 21:10:39
+// Create Date: 2023/09/03 09:36:47
 // Design Name: 
-// Module Name: IMEM
+// Module Name: imm
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -19,23 +19,29 @@
 // 
 //////////////////////////////////////////////////////////////////////////////////
 
-
-module IMEM(
+module imm(
     input clk,
-    input [31:0] raddr,
-    output [31:0] rdata
-);
-
-    reg [31:0] data [255:0];
-    integer i;
+    input reset,
+    input write_enable,
+    input [31:0] reg_input,
+    output reg [31:0] reg_output
+    );
 
     initial begin 
-        // $readmemh("D:/vivado_code/CPU2/lab_1.data/base_inst_data", data);
-        // $readmemh("D:/vivado_code/CPU2/lab_1.data/additional_inst_data1", data);
-        $readmemh("D:/vivado_code/CPU2/lab_1.data/additional_inst_data2", data);
+        reg_output <= 32'h0000_0000;
     end
 
-    assign rdata = data[raddr/4];
-    
+    always @(posedge clk) begin
+        if (!reset) begin
+            reg_output <= 32'h0000_0000;
+        end
+        else begin
+            if (write_enable) begin
+                reg_output <= reg_input;
+            end
+        end
+    end
+
 endmodule
+
 

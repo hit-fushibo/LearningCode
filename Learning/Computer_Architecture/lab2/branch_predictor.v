@@ -50,6 +50,7 @@ module branch_predictor(
             predict_jump<=1'b0;
         end
         else begin//start
+
             //update
             if(upd_en==1&&upd_jumpinst==1)begin
                 //hit

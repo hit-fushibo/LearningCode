@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2023/09/01 11:16:03
+// Create Date: 2023/09/01 11:07:18
 // Design Name: 
-// Module Name: extender
+// Module Name: mux
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,9 +20,12 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module extender(
-    input [15:0] instr_index,
+module mux(
+    input [31:0] A,
+    input [31:0] B,
+    input select,
     output [31:0] out
     );
-    assign out = {{16{instr_index[15]}}, instr_index};
+
+    assign out = select ? B : A;
 endmodule

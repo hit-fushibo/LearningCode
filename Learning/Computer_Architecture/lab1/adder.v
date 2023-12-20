@@ -3,9 +3,9 @@
 // Company: 
 // Engineer: 
 // 
-// Create Date: 2023/10/07 18:41:26
+// Create Date: 2023/08/28 18:15:02
 // Design Name: 
-// Module Name: WB_MUX
+// Module Name: adder
 // Project Name: 
 // Target Devices: 
 // Tool Versions: 
@@ -20,21 +20,10 @@
 //////////////////////////////////////////////////////////////////////////////////
 
 
-module WB_MUX(
-input [5:0]OP_code,
-input [31:0]aluoutpu,
-input [31:0]LMD,
-
-output reg [31:0]out
+module adder(
+    input [31:0] A,
+    input [31:0] B,
+    output [31:0] F
     );
-    always @(*) begin
-        case (OP_code)
-            6'b000000: begin
-                out<=aluoutpu;
-            end
-            6'b100011: begin
-                out<=LMD;
-            end
-        endcase
-    end
+    assign F = A + B;
 endmodule
