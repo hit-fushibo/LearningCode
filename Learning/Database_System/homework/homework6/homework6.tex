@@ -3,7 +3,7 @@
 \documentclass[12pt, a4paper, oneside]{ctexart}
 \usepackage{subcaption,listings,amsmath, amsthm, amssymb, bm, booktabs, color, framed,float, graphicx, hyperref, mathrsfs,minipage-marginpar}
 
-\title{\textbf{数据库系统作业五}}
+\title{\textbf{数据库系统作业六}}
 \author{2021113140符世博}
 \date{}
 \linespread{1.5}
@@ -51,6 +51,17 @@ $R(X)$和$W(X)$分别代表了对数据项$X$的“读”和“写”。$T_i$表
 
 \begin{solution}
 
+    (1)\quad 不是
+
+    (2)\quad
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/2.png}
+    \end{figure}
+
+    (3)\quad 不是，因为事务优先图中有环
+
 \end{solution}
 
 % 2
@@ -68,6 +79,26 @@ $r_2(A);r_1(B);w_2(A);r_3(A);w_1(B);w_3(A);r_2(B);w_2(B)$
 \end{problem}
 
 \begin{solution}
+
+    调度$S_1$优先图：
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/3.png}
+    \end{figure}
+
+    有环所以不是可串行化的。
+
+    调度$S_2$优先图：
+
+    \begin{figure}[H]
+        \centering
+        \includegraphics[width=0.95\textwidth]{figures/4.png}
+    \end{figure}
+
+    无环所以是可串行化的。
+
+
 
 \end{solution}
 
@@ -114,6 +145,41 @@ $r_2(A);r_1(B);w_2(A);r_3(A);w_1(B);w_3(A);r_2(B);w_2(B)$
 
 \begin{solution}
 
+    (1)\quad 114512，读写冲突不一致性
+
+    (2)\quad
+
+    \begin{table}[H]
+        \begin{center}
+
+            \begin{tabular}{|c|c|}
+                \hline
+                $T1$                  & $T2$                  \\
+                \hline
+                $lock(X)$             &                       \\
+                \hline
+                $a\leftarrow Read(X)$ &                       \\
+                \hline
+                                      & $lock(X)$             \\
+                \hline
+                                      & $a\leftarrow Read(X)$ \\
+                \hline
+                $a=a-1$               &                       \\
+                \hline
+                $Write(X,a)$          &                       \\
+                \hline
+                $Unlock(X)$           &                       \\
+                \hline
+                                      & $a=a-2$               \\
+                \hline
+                                      & $Write(X,a)$          \\
+                \hline
+                                      & $Unlock(X)$           \\
+                \hline
+            \end{tabular}
+
+        \end{center}
+    \end{table}
 \end{solution}
 
 % 4
@@ -148,6 +214,12 @@ $r_2(A);r_1(B);w_2(A);r_3(A);w_1(B);w_3(A);r_2(B);w_2(B)$
 
 \begin{solution}
 
+    (1)\quad Steal-No Force策略。允许系统将修改过的块写到磁盘，即使其对应的事务还没有完全提交；即使一个事务修改过的某些快还没有写回到磁盘，也允许它提交。
+
+    (2)\quad 需要对事务$T1$进行$redo$，事务$T2$和$T3$进行$undo$。因为在故障发生时$T1$已经提交而$T2$和$T3$还未提交。
+
+    (3)\quad $114514$，$"hit"$。首先从后向前扫描日志记录，建立提交事务表和未提交事务表，其中提交事务表中包含事务$T1$，未提交事务表中包含事务$T2$和$T3$。对于
+    未提交事务表中的每个事务也就是$T2$和$T3$，执行$undo(T)$，之后写一个$<T,abort>$日志记录，表明撤销完成；对于提交事务表中的每个事务也就是$T1$，执行$redo(T)$。
 \end{solution}
 
 % 5
@@ -196,6 +268,11 @@ $r_2(A);r_1(B);w_2(A);r_3(A);w_1(B);w_3(A);r_2(B);w_2(B)$
 
 \begin{solution}
 
+    (1)\quad $X=3,Y=3,Z=2$
+
+    (2)\quad T1不做处理，T2撤销，T3重做。因为在距离故障最近的检查点中，正活跃的事务只有T2和T3。而在检查点之后T3提交但T2未提交，所以T3重做，T2撤销。
+
+    (3)\quad $X=3,Y=3,Z=3$
 \end{solution}
 
 % 6
@@ -244,6 +321,14 @@ $r_2(A);r_1(B);w_2(A);r_3(A);w_1(B);w_3(A);r_2(B);w_2(B)$
 
 \begin{solution}
 
+    (1)\quad $T3$和$T5$需要撤销，$T2$和$T4$需要重做，$T1$不需要操作
+
+    (2)\quad 需要$undo$的事务列表为$T8$和$T7$，需要$redo$的事务列表为$T6$
+
+    (3)\quad 首先找到距离崩溃最近的检查点，将$undo-list$初始设为$checkpoint$中的活跃列表即$T6,T7,T8$。向下扫描，遇到$<T_6,commit>$，将$T_6$从$undo-list$中删除；遇到$<T_8,Z,9,10>$，重做这个操作，将$10$写给数据项$Z$。
+    之后开始撤销阶段，从尾端反向扫描日志，此时$undo-list$中包含事务$T_7$和$T_8$。遇到$<T_8,Z,9,10>$，将$9$写给数据项$Z$；遇到$<T_8,Z,10,9>$，将$10$写给数据项$Z$；遇到$<T_8,Y,6,8>$，将$6$写给数据项$Y$；
+    遇到$<T_7,Y,50,6>$，将$50$写给数据项$Y$；遇到$<T_8,begin>$，向日志中写入$<T_8,abort>$，将$T_8$从$undo-list$中删除，此时$undo-list$中只有$T_7$；遇到$<T_7,X,1,3>$，将$1$写给数据项$X$；
+    遇到$<T_7,begin>$，向日志中写入$<T_7,abort>$，将$T_7$从$undo-list$中删除，此时$undo-list$中没有事务，撤销阶段结束。
 \end{solution}
 
 
