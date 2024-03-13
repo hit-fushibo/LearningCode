@@ -3,8 +3,9 @@ import matplotlib.pyplot as plt
 import time
 file_path='LearningCode/Learning/Advanced_Algorithms/lab/lab1/data/E1_AOL-out.txt'
 sim_threshold=0.8
-hash_func_num=10
-
+hash_func_default_num=10
+hash_func_min=3
+hash_func_max=20
 
 def load_data(file_path:str)->dict:
     '''
@@ -44,7 +45,7 @@ def naive(datasets:dict,similarity_threshold:float=sim_threshold)->list:
                 result.append([i,j])
     return result
 
-def minHash(datasets:dict,hash_num:int=hash_func_num,similarity_threshold:float=sim_threshold)->tuple:
+def minHash(datasets:dict,hash_num:int=hash_func_default_num,similarity_threshold:float=sim_threshold)->tuple:
     t1=time.time()
     result=[]
     set_keys=list(datasets.keys())
@@ -94,8 +95,7 @@ def main():
     
     result_sim=[]
     time_cost=[]
-    hash_func_min=3
-    hash_func_max=20
+    
     for i in range(hash_func_min,hash_func_max+1): #hash函数个数3-10
         minHash_result,minHash_time=minHash(sampled_dataset,i,sim_threshold)
         sim=result_Comparison(naive_result,minHash_result)
