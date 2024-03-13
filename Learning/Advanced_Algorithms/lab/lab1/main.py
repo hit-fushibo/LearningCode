@@ -59,7 +59,7 @@ def minHash(datasets:dict,hash_num:int=hash_func_num,similarity_threshold:float=
             for k in range(len(hashed_data)):
                 if hashed_data[k] in datasets[set_keys[j]]:
                     minHash_matrix[i,j]=k
-                break
+                    break
             
     for i in range(len(set_keys)):
         for j in range(i+1,len(set_keys)):
@@ -72,20 +72,6 @@ def minHash(datasets:dict,hash_num:int=hash_func_num,similarity_threshold:float=
                 result.append([i,j])
     t2=time.time()
     return result,t2-t1
-
-def result_Visualization(result:list,set_names:list):
-    sim_matrix=np.zeros((len(set_names),len(set_names)))
-    for pair in result:
-        sim_matrix[pair[0],pair[1]]=1
-        sim_matrix[pair[1],pair[0]]=1
-    
-    plt.figure()
-    plt.imshow(sim_matrix, cmap='Blues', interpolation='none')
-    plt.colorbar()
-    plt.xticks(np.arange(len(set_names)), set_names, rotation=45)
-    plt.yticks(np.arange(len(set_names)), set_names)
-    plt.show()
-    return
 
 def result_Comparison(result1:list,result2:list)->float:
     set1=set(tuple(x) for x in result1)
@@ -102,27 +88,24 @@ def main():
     for key in datasets.keys():
         if np.random.random()<p:
             sampled_dataset[key]=datasets[key]
-    print(len(sampled_dataset))
-    
+            
 
     naive_result=naive(sampled_dataset,sim_threshold)
-    result_Visualization(naive_result,list(sampled_dataset.keys()))
-    # print(naive_result)
-    # return
-    # print(1)
     
-    # tmp=[]
-    # for i in range(50,100): #hash函数个数3-10
-    #     # print(i)
-    #     minHash_result,minHash_time=minHash(sampled_dataset,i,sim_threshold)
-    #     print(len(minHash_result))
-    #     # break
-    #     sim=result_Comparison(naive_result,minHash_result)
-    #     # print('hash func num:%d. minHash time:%f. result sim:%f'%(i,minHash_time,sim))
-    #     tmp.append(sim)
-    # hashfunc=np.arange(3,100,1)
-    # plt.plot(hashfunc,tmp,'r-')
-    # plt.show()
+    result_sim=[]
+    time_cost=[]
+    hash_func_min=3
+    hash_func_max=20
+    for i in range(hash_func_min,hash_func_max+1): #hash函数个数3-10
+        minHash_result,minHash_time=minHash(sampled_dataset,i,sim_threshold)
+        sim=result_Comparison(naive_result,minHash_result)
+        result_sim.append(sim)
+        time_cost.append(minHash_time)
+    hashfunc=np.arange(hash_func_min,hash_func_max+1,1)
+    plt.plot(hashfunc,result_sim,'r-',label='result sim')
+    plt.plot(hashfunc,time_cost,'b-',label='time')
+    plt.legend()
+    plt.show()
         
     
 if __name__=='__main__':
