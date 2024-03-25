@@ -27,7 +27,7 @@ def main():
     
     for i in range(epoch):
         print(i,'****')
-        k=np.random.randint(int(data_size//5),int(data_size*0.8))
+        k=np.random.randint(int(data_size//4),int(data_size*0.75))
         print('k:',k)
         t1=time.time()
         correct_result=sort_select(data,k)
