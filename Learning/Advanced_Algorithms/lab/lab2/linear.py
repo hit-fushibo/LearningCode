@@ -1,11 +1,12 @@
-def swap(a,i,j):
-    if i==j:
+def swap(a: list, i: int, j: int):
+    if i == j:
         return
-    t=a[i]
-    a[i]=a[j]
-    a[j]=t
+    t = a[i]
+    a[i] = a[j]
+    a[j] = t
 
-def get_mid(a,l,r):
+
+def get_mid(a: list, l: int, r: int) -> int:
     if l == r:
         return l
     i = l
@@ -27,7 +28,8 @@ def get_mid(a,l,r):
         return l
     return get_mid(a, l, l + n)
 
-def partition(a, l, r, p):
+
+def partition(a: list, l: int, r: int, p: int) -> int:
     swap(a, p, l)
     i = l
     j = r - 1
@@ -42,7 +44,8 @@ def partition(a, l, r, p):
     a[i] = pivot
     return i
 
-def select(a, l, r, k):
+
+def select(a: list, l: int, r: int, k: int):
     p = get_mid(a, l, r)
     i = partition(a, l, r, p)
     m = i - l + 1
@@ -54,10 +57,9 @@ def select(a, l, r, k):
         return select(a, i + 1, r, k - m)
 
 
-
-def liner_select(datasets:dict,k:int):
-    result={}
+def liner_select(datasets: dict, k: int) -> dict:
+    result = {}
     for key in datasets.keys():
-        data=datasets[key]
-        result[key]=select(data,0,len(data),k)
+        data = datasets[key]
+        result[key] = select(data, 0, len(data), k)
     return result
