@@ -9,7 +9,7 @@ import matplotlib.pyplot as plt
 
 mid_index = 50000
 data_size = mid_index*2+1
-epoch = 100
+epoch = 10
 
 
 def main():

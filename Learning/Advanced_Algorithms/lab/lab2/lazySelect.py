@@ -2,6 +2,7 @@ from sort import merge_sort
 import numpy as np
 import math
 
+key=0.75
 
 def randomSelect(data):
     return np.random.choice(data, int(pow(len(data), 0.75)), replace=True).tolist()
@@ -17,7 +18,7 @@ def rank(l: list, element) -> int:
 
 def lazy_Select(datasets: dict, k: int) -> dict:
     result = {}
-    for key in datasets.keys():
+    for key_ in datasets.keys():
         data = datasets[key]
         n = len(data)
 
@@ -27,9 +28,9 @@ def lazy_Select(datasets: dict, k: int) -> dict:
 
             sampled_data = merge_sort(sampled_data)
 
-            x = int(k * pow(n, -0.25))
+            x = int(k * pow(n, -(1-key)))
             l = max(0, int(x - math.sqrt(n)))
-            r = min(int(pow(n, 0.75)), int(x + math.sqrt(n)))
+            r = min(int(pow(n, key)), int(x + math.sqrt(n)))
 
             L = sampled_data[max(1, l - 1)]
             H = sampled_data[r - 1]
@@ -41,8 +42,8 @@ def lazy_Select(datasets: dict, k: int) -> dict:
                 if L <= i <= H:
                     p.append(i)
 
-            if LP <= k <= HP and len(p) <= 4*pow(n, 0.75)+1:
+            if LP <= k <= HP and len(p) <= 4*pow(n, key)+1:
                 p = merge_sort(p)
-                result[key] = p[k-LP]
+                result[key_] = p[k-LP]
                 break
     return result
