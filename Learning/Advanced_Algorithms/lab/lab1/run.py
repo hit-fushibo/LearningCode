@@ -101,13 +101,13 @@ def main():
         datasets = load_data(file_path)
         
         # for test
-        # sampled_dataset = dict()
-        # p = 50 / len(datasets.keys())
-        # for key in datasets.keys():
-        #     if np.random.random() < p:
-        #         sampled_dataset[key] = datasets[key]
+        sampled_dataset = dict()
+        p = 10000 / len(datasets.keys())
+        for key in datasets.keys():
+            if np.random.random() < p:
+                sampled_dataset[key] = datasets[key]
                 
-        sampled_dataset=datasets
+        # sampled_dataset=datasets
         
         naive_result = naive(sampled_dataset, sim_threshold)
         
