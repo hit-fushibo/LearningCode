@@ -2,6 +2,7 @@
 /*TODO:
 多叉树定义
 属性值计算
+添加给Bison的返回值
  */
 #include"syntax.tab.h"
 %}
