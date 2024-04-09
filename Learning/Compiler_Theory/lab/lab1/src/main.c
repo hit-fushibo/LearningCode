@@ -1,7 +1,7 @@
 #include"syntax.tab.h"
 #include<stdio.h>
 #include<stdlib.h>
-
+extern void yyrestart(FILE*);
 
 int main(int argc,char** argv)
 {
