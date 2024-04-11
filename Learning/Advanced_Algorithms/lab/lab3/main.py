@@ -48,7 +48,7 @@ def cal_MST_weight(n:int,epoch:int) -> float:
     return weight_sum
 
 def main():
-    epoch=100
+    epoch=1000
     n_nums=[16,32,64,128,256,512,1024]
     mean_weight_list=[]
     time_lsit=[]
