@@ -1,7 +1,7 @@
 import db
 
-class full_join:
-    def __init__(self,join_order:list,db:db.DatabaseManager) -> None:
+class FullJoin:
+    def __init__(self,db:db.DatabaseManager,join_order:list) -> None:
         self.join_order=join_order
         self.db=db
     

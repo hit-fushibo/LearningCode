@@ -71,10 +71,10 @@ def delet_db(DM: db.DatabaseManager):
     DM.delete_tuple('course', '*')
     DM.delete_tuple('teacher', '*')
     DM.delete_tuple('student', '*')
-    DM.delete_tuple('sw', '*')
 
 
 def delet_w(DM: db.DatabaseManager):
     DM.delete_tuple('coursew', '*')
     DM.delete_tuple('teacherw', '*')
     DM.delete_tuple('studentw', '*')
+    DM.delete_tuple('sw', '*')

@@ -10,43 +10,52 @@ class Sampling:
         # get r0 w
         sql='select sum(w) from %s;'%(self.join_order[0]+'w')
         res=self.db.execute(sql)
+        
         r0_w=int(res[0][0])
         w=r0_w
         current_t=()
         common_attribute=''
-        cnt=0
         result=[]
+        temp_w=w
         for i in range(len(self.join_order)):
-            temp_w=w
+            
             if i ==0:
                 w=r0_w
-                sql='select count(*) from %s '%self.join_order[i]
-                res=self.db.execute(sql)
-                cnt=int(res[0][0])
             else:
                 c_attributes=self.db.get_table_attributes(self.join_order[i])
                 l_attributes=self.db.get_table_attributes(self.join_order[i-1])
                 common_attribute=list(set(c_attributes)&set(l_attributes))[0]
-                sql='select sum(w),count(*) from %s where %s=\'%s\''%(self.join_order[i]+'w',common_attribute,current_t[len(current_t)-1])
+                
+                sql='select sum(w) from %s where %s=\'%s\''%(self.join_order[i]+'w',common_attribute,current_t[len(current_t)-2])
+                
                 res=self.db.execute(sql)
+                
                 w=int(res[0][0])
-                cnt=int(res[0][1])
-            
             t=float(1-w/temp_w)
+            
             if np.random.uniform(0,1)<t:
                 return None
             else:
-                index=np.random.randint(0,cnt)
+                
+                P=np.random.rand()
                 if i!=0:
-                    sql='select * from %s where %s=\'%s\''%(self.join_order[i],common_attribute,current_t[len(current_t)-1])
+                    sql='select * from %s where %s=\'%s\''%(self.join_order[i]+'w',common_attribute,current_t[len(current_t)-1])
                 else:
-                    sql='select * from %s '%self.join_order[i]
-                select_t=self.db.execute(sql)[index]
+                    sql='select * from %s '%(self.join_order[i]+'w')
+                res=self.db.execute(sql)
+                p=0.
+                for t in res:
+                    p+=t[2]/w
+                    if P<p:
+                        select_t=t
+                        break
                 if result==[]:
                     result.append(select_t[0])
-                for i in range(1,len(select_t)):
+                for i in range(1,len(select_t)-1):
                     result.append(select_t[i])
                 current_t=select_t
+                w=select_t[-1]
+                temp_w=w
         return result
     
     def sample(self):

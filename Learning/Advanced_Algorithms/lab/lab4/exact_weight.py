@@ -16,7 +16,6 @@ class ExatWeight:
             if i == len(self.join_order)-1:
                 table = self.join_order[i]
                 attributes = self.db.get_table_attributes(table)
-                print(attributes)
                 w_table = table+'w'
                 data = list(self.db.query_data(table, attributes))
                 w_attributes = attributes[:]
