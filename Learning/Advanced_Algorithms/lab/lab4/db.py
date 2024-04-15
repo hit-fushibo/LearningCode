@@ -25,7 +25,7 @@ class DatabaseManager:
         try:
             value_sql=''
             for value in values:
-                value_sql+='\'%s\','%value
+                value_sql+='%s,'%value
             value_sql=value_sql[:-1]
             
             sql = f"INSERT INTO {table} ({', '.join(attributes)}) VALUES ({value_sql});"
@@ -36,6 +36,18 @@ class DatabaseManager:
             self.db.rollback()
             print(sql,attributes,values)
             print(f"Error adding tuple: {e}")
+        finally:
+            cursor.close()
+    def execute(self,sql:str):
+        cursor = self.db.cursor()
+        try:
+            cursor.execute(sql)
+            results = cursor.fetchall()
+            return results
+        except Exception as e:
+            print(sql)
+            print(f"Error executing sql : {e}")
+            exit(0)
         finally:
             cursor.close()
 
@@ -51,6 +63,7 @@ class DatabaseManager:
             return results
         except Exception as e:
             print(f"Error querying data: {e}")
+            exit(0)
         finally:
             cursor.close()
 
@@ -64,6 +77,21 @@ class DatabaseManager:
         except Exception as e:
             self.db.rollback()
             print(f"Error deleting tuple: {e}")
+        finally:
+            cursor.close()
+    
+    def get_table_attributes(self,table:str):
+        cursor = self.db.cursor()
+        sql='select column_name from information_schema.columns where table_schema= \'%s\' and table_name=\'%s\''%(self.database,table)
+        try:
+            cursor.execute(sql)
+            cols=[c[0] for c in cursor.fetchall()]
+            return cols
+        except Exception as e:
+            self.db.rollback()
+            print(f"Error getting table attributes: {e}")
+            exit(0)
+            
         finally:
             cursor.close()
 
