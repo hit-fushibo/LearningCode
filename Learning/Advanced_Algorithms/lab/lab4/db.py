@@ -73,7 +73,7 @@ class DatabaseManager:
             sql = f"DELETE FROM {table};"
             cursor.execute(sql)
             self.db.commit()
-            print("Tuple deleted successfully")
+            # print("Tuple deleted successfully")
         except Exception as e:
             self.db.rollback()
             print(f"Error deleting tuple: {e}")

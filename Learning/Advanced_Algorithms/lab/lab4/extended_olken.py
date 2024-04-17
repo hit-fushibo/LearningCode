@@ -58,12 +58,14 @@ class ExtendedOlken:
                 data = list(self.db.query_data(table, attributes))
                 w_attributes = attributes[:]
                 w_attributes.append('w')
+                print(len(data))
                 for d in data:
                     w_value = []
                     for value in d:
                         w_value.append('\''+value+'\'')
                     w_value.append(self.oklen_bound[i])
                     self.db.add_tuple(w_table, w_attributes, w_value)
+                
                 right_attributes = attributes
             else:
                 table = self.join_order[i]
@@ -77,6 +79,7 @@ class ExtendedOlken:
                 data = list(self.db.query_data(table, attributes))
                 w_attributes = attributes[:]
                 w_attributes.append('w')
+                print(len(data))
                 for d in data:
                     w_value = []
                     for value in d:

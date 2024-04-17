@@ -20,6 +20,7 @@ class ExatWeight:
                 data = list(self.db.query_data(table, attributes))
                 w_attributes = attributes[:]
                 w_attributes.append('w')
+                print(len(data))
                 for d in data:
                     w_value = []
                     for value in d:
