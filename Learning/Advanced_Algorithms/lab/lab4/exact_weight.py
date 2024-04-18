@@ -1,59 +1,75 @@
+import attr
+from regex import R
 import db
 import numpy as np
 import os
+from sample import Sampling
 
 
-class ExatWeight:
-    def __init__(self, db: db.DatabaseManager, join_order: list) -> None:
-        self.db = db
-        self.join_order = join_order
+class ExatWeight(Sampling):
+    def __init__(self, db: db.DatabaseManager, join_order: list,num:int) -> None:
+        
+        super().__init__(db,num,join_order)
+        self.tuple_cost={}
 
     def cul_weight(self):
-        right_attributes = []
-
         for i in range(len(self.join_order)-1, -1, -1):
-            right_w = {}
+            self.tuple_cost[self.join_order[i]]={}
             if i == len(self.join_order)-1:
                 table = self.join_order[i]
                 attributes = self.db.get_table_attributes(table)
-                w_table = table+'w'
+                l_attributes= self.db.get_table_attributes(self.join_order[i-1])
+                l_common_attributes = list(
+                    set(l_attributes) & set(attributes))[0]
+                index=attributes.index(l_common_attributes)
                 data = list(self.db.query_data(table, attributes))
-                w_attributes = attributes[:]
-                w_attributes.append('w')
-                print(len(data))
+                r_w={}
                 for d in data:
-                    w_value = []
-                    for value in d:
-                        w_value.append('\''+value+'\'')
-                    w_value.append(1)
-                    self.db.add_tuple(w_table, w_attributes, w_value)
-                right_attributes = attributes
+                    self.tuple_cost[self.join_order[i]][d[index]]=1
+                    if d[index] in r_w.keys():
+                        r_w[d[index]]+=1
+                    else:
+                        r_w[d[index]]=1
             else:
                 table = self.join_order[i]
-                right_table = self.join_order[i+1]+'w'
                 attributes = self.db.get_table_attributes(table)
-                common_attributes = list(
-                    set(right_attributes) & set(attributes))[0]
-                w_table = table+'w'
-
-                # set right w
-                sql = 'select %s,sum(w) from %s group by %s;' % (
-                    common_attributes, right_table, common_attributes)
-                result = self.db.execute(sql)
-                for tuple in result:
-                    if tuple[0] in right_w.keys():
-                        right_w[tuple[0]] += tuple[1]
-                    else:
-                        right_w[tuple[0]] = tuple[1]
-                attributes.remove(common_attributes)
-                attributes.insert(0, common_attributes)
-                data = list(self.db.query_data(table, attributes))
-                w_attributes = attributes[:]
-                w_attributes.append('w')
+                if i!=0:
+                    l_attributes= self.db.get_table_attributes(self.join_order[i-1])
+                    l_common_attributes = list(
+                        set(l_attributes) & set(attributes))[0]
+                    l_index=attributes.index(l_common_attributes)
+                else:
+                    l_common_attributes=attributes[:]
+                r_attributes= self.db.get_table_attributes(self.join_order[i+1])
+                r_common_attributes = list(
+                        set(r_attributes) & set(attributes))[0]
+                r_index=attributes.index(r_common_attributes)
+                
+                # set cost
+                
+                data = self.db.query_data(table, attributes)
                 for d in data:
-                    w_value = []
-                    for value in d:
-                        w_value.append('\''+value+'\'')
-                    w_value.append(right_w[d[0]])
-                    self.db.add_tuple(w_table, w_attributes, w_value)
-                right_attributes = attributes
+                    if i==0:
+                        self.tuple_cost[self.join_order[i]][d]=r_w[d[r_index]]
+                    else:
+                        self.tuple_cost[self.join_order[i]][d[l_index]]=r_w[d[r_index]]
+                
+                r_w={}
+                
+                #set r_w
+                if i!=0:
+                    for d in data:
+                        if d[l_index] in r_w.keys():
+                            r_w[d[l_index]]+=self.tuple_cost[self.join_order[i]][d[l_index]]
+                        else:
+                            r_w[d[l_index]]=self.tuple_cost[self.join_order[i]][d[l_index]]
+                    
+                
+    
+    def Sample(self):
+        self.cul_weight()
+        print(1)
+        # print(self.tuple_cost)
+        return self.sample(self.tuple_cost)
+                    
+                

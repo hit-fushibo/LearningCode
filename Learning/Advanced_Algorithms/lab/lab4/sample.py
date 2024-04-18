@@ -6,64 +6,98 @@ class Sampling:
         self.join_order=join_order
         self.db=db
         
-    def __sample(self):
+    def __sample(self,W:dict):
         # get r0 w
-        sql='select sum(w) from %s;'%(self.join_order[0]+'w')
-        res=self.db.execute(sql)
-        
-        r0_w=int(res[0][0])
+        r0_w=0
+        for key in W[self.join_order[0]].keys():
+            r0_w+=int(W[self.join_order[0]][key])
         w=r0_w
         current_t=()
-        common_attribute=''
         result=[]
         temp_w=w
         for i in range(len(self.join_order)):
-            
+            # print(i)
             if i ==0:
+                attributes=self.db.get_table_attributes(self.join_order[i])
                 w=r0_w
-            else:
-                c_attributes=self.db.get_table_attributes(self.join_order[i])
-                l_attributes=self.db.get_table_attributes(self.join_order[i-1])
-                common_attribute=list(set(c_attributes)&set(l_attributes))[0]
-                
-                sql='select sum(w) from %s where %s=\'%s\''%(self.join_order[i]+'w',common_attribute,current_t[len(current_t)-2])
-                
-                res=self.db.execute(sql)
-                
-                w=int(res[0][0])
-            t=float(1-w/temp_w)
+                t=float(1-w/temp_w)
+                # print(w,temp_w)
             
-            if np.random.uniform(0,1)<t:
-                return None
-            else:
-                
-                P=np.random.rand()
-                if i!=0:
-                    sql='select * from %s where %s=\'%s\''%(self.join_order[i]+'w',common_attribute,current_t[len(current_t)-1])
+                if np.random.uniform(0,1)<t:
+                    # print(t)
+                    return None
                 else:
-                    sql='select * from %s '%(self.join_order[i]+'w')
-                res=self.db.execute(sql)
-                p=0.
+                    
+                    P=np.random.rand()
+                    sql='select * from %s '%(self.join_order[i])
+                    res=self.db.query_data(self.join_order[i],attributes)
+                    p=0.
+                    for t in res:
+                        p+=int(W[self.join_order[i]][t])/w
+                        if P<p:
+                            select_t=t
+                            w=int(W[self.join_order[i]][t])
+                            break
+                    if result==[]:
+                        result.append(select_t[0])
+                    for j in range(1,len(select_t)):
+                        result.append(select_t[j])
+                    current_t=select_t
+                    temp_w=w
+                r_attributes= self.db.get_table_attributes(self.join_order[i+1])
+                r_common_attributes = list(
+                        set(r_attributes) & set(attributes))[0]
+                r_index=attributes.index(r_common_attributes)
+            else:
+                attributes=self.db.get_table_attributes(self.join_order[i])
+                l_attributes= self.db.get_table_attributes(self.join_order[i-1])
+                l_common_attributes = list(
+                    set(l_attributes) & set(attributes))[0]
+                l_index=attributes.index(l_common_attributes)
+                
+                # sql='select %s from %s where %s=\'%s\''%(self.join_order[i],l_common_attributes,current_t[r_index])
+                
+                res=self.db.query_data(self.join_order[i],attributes,'%s=\'%s\''%(l_common_attributes,current_t[r_index]))
+                w=0
                 for t in res:
-                    p+=t[2]/w
-                    if P<p:
-                        select_t=t
-                        break
-                if result==[]:
-                    result.append(select_t[0])
-                for i in range(1,len(select_t)-1):
-                    result.append(select_t[i])
-                current_t=select_t
-                w=select_t[-1]
-                temp_w=w
+                    w+=int(W[self.join_order[i]][t[l_index]])
+                t=float(1-w/temp_w)
+                # print(w,temp_w)
+                # print(t)
+                if np.random.uniform(0,1)<t:
+                    return None
+                else:
+                    
+                    P=np.random.rand()
+                    p=0.
+                    for t in res:
+                        p+=int(W[self.join_order[i]][t[l_index]])/w
+                        if P<p:
+                            select_t=t
+                            break
+                    if result==[]:
+                        result.append(select_t[0])
+                    for j in range(1,len(select_t)):
+                        result.append(select_t[j])
+                    current_t=select_t
+                    w=int(W[self.join_order[i]][select_t[l_index]])
+                    temp_w=w
+                    
+                if i!=len(self.join_order)-1:
+                    r_attributes= self.db.get_table_attributes(self.join_order[i+1])
+                    r_common_attributes = list(
+                            set(r_attributes) & set(attributes))[0]
+                    r_index=attributes.index(r_common_attributes)
         return result
     
-    def sample(self):
+    def sample(self,w:dict):
         res=[]
         for i in range(self.num):
-            r=self.__sample()
+            # print(i)
+            r=self.__sample(w)
             while r==None:
-                r=self.__sample()
+                # print(i)
+                r=self.__sample(w)
             res.append(r)
         return res
                 

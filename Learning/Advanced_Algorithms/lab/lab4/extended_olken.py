@@ -1,10 +1,11 @@
 import db
 import numpy as np
-
-class ExtendedOlken:
-    def __init__(self, db: db.DatabaseManager, join_order: list) -> None:
-        self.db = db
-        self.join_order = join_order
+from sample import Sampling
+class ExtendedOlken(Sampling):
+    def __init__(self, db: db.DatabaseManager, join_order: list,num:int) -> None:
+        
+        super().__init__(db,num,join_order)
+        self.tuple_cost={}
         
     def get_frequency(self):
         self.max_frequency={}
@@ -38,55 +39,57 @@ class ExtendedOlken:
             self.max_frequency[c_table]=max_f
             self.mean_frequency[c_table]=mean_f
         
-        self.oklen_bound=[]
+        self.oklen_bound={}
         for i in range(len(self.join_order)):
             bound=1
             for j in range(i+1,len(self.join_order)):
                 bound*=self.max_frequency[self.join_order[j]]
-            self.oklen_bound.append(bound)
-        self.oklen_bound.append(1)
+            self.oklen_bound[self.join_order[i]]=bound
+        self.oklen_bound[self.join_order[len(self.join_order)-1]]=1
         
     def cul_weight(self):
         self.get_frequency()
-        right_attributes = []
-
         for i in range(len(self.join_order)-1, -1, -1):
+            self.tuple_cost[self.join_order[i]]={}
             if i == len(self.join_order)-1:
                 table = self.join_order[i]
                 attributes = self.db.get_table_attributes(table)
-                w_table = table+'w'
+                l_attributes= self.db.get_table_attributes(self.join_order[i-1])
+                l_common_attributes = list(
+                    set(l_attributes) & set(attributes))[0]
+                index=attributes.index(l_common_attributes)
                 data = list(self.db.query_data(table, attributes))
-                w_attributes = attributes[:]
-                w_attributes.append('w')
-                print(len(data))
                 for d in data:
-                    w_value = []
-                    for value in d:
-                        w_value.append('\''+value+'\'')
-                    w_value.append(self.oklen_bound[i])
-                    self.db.add_tuple(w_table, w_attributes, w_value)
-                
-                right_attributes = attributes
+                    self.tuple_cost[self.join_order[i]][d[index]]=1
             else:
                 table = self.join_order[i]
                 attributes = self.db.get_table_attributes(table)
-                common_attributes = list(
-                    set(right_attributes) & set(attributes))[0]
-                w_table = table+'w'
-
-                attributes.remove(common_attributes)
-                attributes.insert(0, common_attributes)
-                data = list(self.db.query_data(table, attributes))
-                w_attributes = attributes[:]
-                w_attributes.append('w')
-                print(len(data))
+                if i!=0:
+                    l_attributes= self.db.get_table_attributes(self.join_order[i-1])
+                    l_common_attributes = list(
+                        set(l_attributes) & set(attributes))[0]
+                    l_index=attributes.index(l_common_attributes)
+                else:
+                    l_common_attributes=attributes[:]
+                r_attributes= self.db.get_table_attributes(self.join_order[i+1])
+                r_common_attributes = list(
+                        set(r_attributes) & set(attributes))[0]
+                r_index=attributes.index(r_common_attributes)
+                
+                # set cost
+                
+                data = self.db.query_data(table, attributes)
                 for d in data:
-                    w_value = []
-                    for value in d:
-                        w_value.append('\''+value+'\'')
-                    w_value.append(self.oklen_bound[i])
-                    self.db.add_tuple(w_table, w_attributes, w_value)
-                right_attributes = attributes
+                    if i==0:
+                        self.tuple_cost[self.join_order[i]][d]=self.oklen_bound[self.join_order[i]]
+                    else:
+                        self.tuple_cost[self.join_order[i]][d[l_index]]=self.oklen_bound[self.join_order[i]]
+    def Sample(self):
+        self.cul_weight()
+        print(1)
+        # print(self.tuple_cost)
+        return self.sample(self.tuple_cost)            
+                
     
                 
                     

@@ -80,7 +80,7 @@ class DatabaseManager:
         finally:
             cursor.close()
     
-    def get_table_attributes(self,table:str):
+    def get_table_attributes(self,table:str)->list:
         cursor = self.db.cursor()
         sql='select column_name from information_schema.columns where table_schema= \'%s\' and table_name=\'%s\''%(self.database,table)
         try:
