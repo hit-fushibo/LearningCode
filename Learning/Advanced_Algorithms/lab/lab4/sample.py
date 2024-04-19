@@ -93,10 +93,10 @@ class Sampling:
     def sample(self,w:dict):
         res=[]
         for i in range(self.num):
-            # print(i)
+            print('\t\t\t sample ',i+1,'tuple')
             r=self.__sample(w)
             while r==None:
-                # print(i)
+                print('\t\t\t resample ')
                 r=self.__sample(w)
             res.append(r)
         return res

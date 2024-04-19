@@ -2,7 +2,7 @@ import attr
 from regex import R
 import db
 import numpy as np
-import os
+import time
 from sample import Sampling
 
 
@@ -67,9 +67,15 @@ class ExatWeight(Sampling):
                 
     
     def Sample(self):
+        t1=time.time()
         self.cul_weight()
-        print(1)
+        t2=time.time()
+        print('\t\t',1)
         # print(self.tuple_cost)
-        return self.sample(self.tuple_cost)
+        a=self.sample(self.tuple_cost)
+        t3=time.time()
+        print('\t\tcul weight:',(t2-t1))
+        print('\t\tsample tuple:',(t3-t2))
+        return a
                     
                 

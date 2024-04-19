@@ -1,6 +1,7 @@
 import db
 import numpy as np
 from sample import Sampling
+import time
 class ExtendedOlken(Sampling):
     def __init__(self, db: db.DatabaseManager, join_order: list,num:int) -> None:
         
@@ -85,10 +86,16 @@ class ExtendedOlken(Sampling):
                     else:
                         self.tuple_cost[self.join_order[i]][d[l_index]]=self.oklen_bound[self.join_order[i]]
     def Sample(self):
+        t1=time.time()
         self.cul_weight()
-        print(1)
+        t2=time.time()
+        print('\t\t',1)
         # print(self.tuple_cost)
-        return self.sample(self.tuple_cost)            
+        a=self.sample(self.tuple_cost)
+        t3=time.time()
+        print('\t\tcul weight:',(t2-t1))
+        print('\t\tsample tuple:',(t3-t2))
+        return a          
                 
     
                 
