@@ -4,9 +4,7 @@
 #include<stdarg.h>
 #include<stdio.h>
 #include<stdlib.h>
-void print_tree(struct node* root,int depth);
-struct node* create_gram_node(int is_null,char* name,char* value,int lineno);
-void add_child(struct node* root,struct node* child);
+//#include"MFT.c"
 void yyerror();
 int is_error=0;
 struct node * root;
@@ -126,23 +124,14 @@ struct node * root;
 
 
 /***associativity***/
-%left LP
-%left RP
-%left LB
-%left RB
-%left LC
-%left RC
-%left DOT
-%left STAR
-%left DIV
-%left PLUS
-%left MINUS
-%left RELOP
-%left AND
+%right ASSIGNOP 
 %left OR
-
+%left AND
+%left RELOP
+%left PLUS MINUS
+%left STAR DIV 
 %right NOT
-%right ASSIGNOP
+%left LP COMMA RP LB RB DOT
 
 
 /**lower than else**/
@@ -161,7 +150,7 @@ Program : ExtDefList {
     root=$$;
     if(is_error==0)
     {
-        print_tree($$,1);
+        
     }
 }
 ;
@@ -290,66 +279,7 @@ Args : Exp COMMA Args {$$=create_gram_node(0,"Args","",yylineno);add_child($$,$1
 %%
 /**************************/
 
-struct node* create_gram_node(int is_null, char* name, char* value, int lineno) {
-    struct node* gram_node=(struct node *)malloc(sizeof(struct node));
-    gram_node->is_null=is_null;
-    gram_node->name=(char*)malloc(strlen(name)+2);
-    gram_node->value=(char*)malloc(strlen(value)+2);
-    strcpy(gram_node->name,name);
-    strcpy(gram_node->value,value);
-    gram_node->lineno=lineno;
-    gram_node->right_bro=NULL;
-    gram_node->children=NULL;
-    return gram_node;
-}
 
-void add_child(struct node* root, struct node* child) {
-    if (root == NULL || child == NULL) {
-        fprintf(stderr, "Invalid input: root or child is NULL");
-        return;
-    }
-    if (root->children == NULL) {
-        root->children = child;
-        root->lineno=child->lineno;
-    } else {
-        struct node* temp = root->children;
-        while (temp->right_bro != NULL) {
-            temp = temp->right_bro;
-        }
-        temp->right_bro = child;
-    }
-}
-
-void print_tree(struct node *root, int depth)
-{
-    if (root != NULL && root->is_null==0)
-    {
-        for (int i = 0; i < depth; i++)
-        {
-            printf("  ");
-        }
-        // 结构体属性输出
-        printf("%s",root->name);
-        if(strcmp(root->name,"ID")==0){
-            printf(" :%s",root->value);
-        }
-        if(strcmp(root->name,"TYPE")==0){
-            printf(" :%s",root->value);
-        }
-        if(strcmp(root->name,"INT")==0||strcmp(root->name,"FLOAT")==0){
-            printf(" :%s",root->value);
-        }
-        printf(" (%d)\n",root->lineno);
-    }
-    if (root->children != NULL)
-    {
-        print_tree(root->children, depth + 1);
-    }
-    if (root->right_bro != NULL)
-    {
-        print_tree(root->right_bro, depth);
-    }
-}
 void yyerror()
 {
     printf("Error type B at line %d: syntax error\n",yylineno);
