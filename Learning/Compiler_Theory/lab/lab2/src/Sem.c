@@ -6,6 +6,7 @@
 #define ARRAY 2
 #define ARRAY_INT 7
 #define ARRAY_FLOAT 8
+#define ARRAY_STRUCT 9
 #define STRUCT 3
 #define RIGHT_ONLY 4
 #define FUNC_RETURN 5
@@ -20,6 +21,7 @@ symbol var_table;
 symbol struct_table;
 symbol func_table;
 symbol temp_var;
+Type struct_array;
 int struct_error1=0;
 FieldList S2F(symbol head)
 {
@@ -46,7 +48,7 @@ int Analyze_Program(struct node* root){
     struct_table=NULL;
     func_table=NULL;
     temp_var=NULL;
-    
+    struct_array=NULL;
     init_int_float_type();
     
     Analyze_ExtDefList(root->children);
@@ -878,7 +880,7 @@ int Analyze_Exp(struct node* root){
         int type2=Analyze_Exp(root->children->right_bro->right_bro);
         exp_left=0;
         int error_flag=0;
-        if(type1%10!=ARRAY&&type1%10!=ARRAY_INT&&type1%10!=ARRAY_FLOAT)
+        if(type1%10!=ARRAY&&type1%10!=ARRAY_INT&&type1%10!=ARRAY_FLOAT&&type1!=ARRAY_STRUCT)
         {
             
             error_flag=1;
@@ -896,12 +898,14 @@ int Analyze_Exp(struct node* root){
             if(type1%10==ARRAY)return type1/10;
             if(type1%10==ARRAY_INT)return INT;
             if(type1%10==ARRAY_FLOAT)return FLOAT;
+            if(type1%10==ARRAY_STRUCT)return STRUCT;
         }
         
     }
     if(!strcmp(root->children->right_bro->name,"DOT"))
     {
         
+        int type1=Analyze_Exp(root->children);
         int t=prase_struct(root);
         return t;
     }
@@ -910,7 +914,14 @@ int Analyze_Exp(struct node* root){
 
 int prase_struct(struct node* root)
 {
-    FieldList f=prase_struct_help_func(root->children);
+    FieldList f=NULL;
+    if(struct_array!=NULL)
+    {
+        f=struct_array->u.structure;
+    }
+    else{
+        f=prase_struct_help_func(root->children);
+    }
     if(f==NULL)return ERROR;
     else
     {
@@ -919,6 +930,7 @@ int prase_struct(struct node* root)
             if(f->type->kind==0)return f->type->u.basic;
             else if (f->type->kind==2)
             {
+                struct_array=f->type;
                 return STRUCT;
             }
             else
@@ -994,6 +1006,11 @@ int type2array_code(Type t)
         {
             return ARRAY_FLOAT;
         }
+    }
+    else if(t->u.array.elem->kind==2)
+    {
+        struct_array=t->u.array.elem;
+        return ARRAY_STRUCT;
     }
     else
     {
