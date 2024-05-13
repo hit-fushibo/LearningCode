@@ -1,7 +1,6 @@
 #include "tree.h"
 #include"SemAnl.h"
 
-//单条中间代码的数据结构定义为：
 typedef struct Operand_* Operand;
 struct Operand_ {
     enum { 
